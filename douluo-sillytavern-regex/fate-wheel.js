@@ -10,7 +10,7 @@
 })(function () {
   "use strict";
 
-  const GOD_TIER_RANK = { 'Tam Cấp': 1, 'Nhị Cấp': 2, 'Nhất Cấp': 3, 'Thần Vương': 4, 'Chí Cao Thần Vương': 5 };
+  const GOD_TIER_RANK = { "Tam Cấp": 1, "Nhị Cấp": 2, "Nhất Cấp": 3, "Thần Vương": 4, "Chí Cao Thần Vương": 5 };
   const MARTIAL_CATEGORIES = {
     "16e885e9-96bf-4629-9baa-c57e1cbdf571": "Võ Hồn biến dị",
     "f1afa805-95b7-4d54-aea2-d3de15e54c5a": "Thú Võ Hồn",
@@ -49,13 +49,13 @@
     201537: "beastSpeciesPig",
   };
   const AWAKENING_STEPS = {
-    'Võ Hồn biến dị': "humanAwakenMutated",
-    'Thú Võ Hồn': "humanAwakenBeast",
-    'Võ Hồn Loại Khái Niệm': "humanAwakenConcept",
-    'Khí Võ Hồn': "humanAwakenTool",
-    'Bản Thể Võ Hồn': "humanAwakenBody",
-    'Cực Trí Võ Hồn': "humanAwakenExtreme",
-    'Thực Vật Hệ Võ Hồn': "humanAwakenPlant",
+    "Võ Hồn biến dị": "humanAwakenMutated",
+    "Thú Võ Hồn": "humanAwakenBeast",
+    "Võ Hồn Loại Khái Niệm": "humanAwakenConcept",
+    "Khí Võ Hồn": "humanAwakenTool",
+    "Bản Thể Võ Hồn": "humanAwakenBody",
+    "Cực Trí Võ Hồn": "humanAwakenExtreme",
+    "Thực Vật Hệ Võ Hồn": "humanAwakenPlant",
   };
   const PASSIVES = {
     "74e780": ["mutatedDrawback:twoLegBonesAt90"],
@@ -199,7 +199,7 @@
   }
 
   function chineseStageCount(value, fallback) {
-    const match = text(value).match(/([NhấtNhịTamTứNgũLụcThấtBátCửu])(?:Khảo|khảo nghiệm)/);
+    const match = text(value).match(/([NhấtNhịTamTứNgũLụcThấtBátCửu])(?:(?:考|Khảo)|khảo nghiệm)/);
     if (!match) return fallback;
     return "123456789".indexOf(match[1]) + 1;
   }
@@ -252,7 +252,9 @@
     const beast = character.beast;
     if (character.flags.beastHasDragonBloodline) return true;
     if (beast && beast.type && ["f7fb5e", "5ee629", "fc8f55"].includes(beast.type.optionId)) return true;
-    return !!(beast && beast.bloodlines.some((item) => /(?:龙|Long)/.test((item.selection && item.selection.text) || "")));
+    return !!(
+      beast && beast.bloodlines.some((item) => /(?:龙|Long)/.test((item.selection && item.selection.text) || ""))
+    );
   }
 
   function isPureDragon(character) {
@@ -260,7 +262,11 @@
     return !!(
       character.flags.beastPrimaryPureDragon ||
       (beast && beast.type && beast.type.optionId === "fc8f55") ||
-      (beast && beast.bloodlines[0] && /(?:纯|thuần)(?:血龙|Huyết Long)|(?:龙王|Long Vương)|(?:龙神|Long Thần)/.test(beast.bloodlines[0].selection.text))
+      (beast &&
+        beast.bloodlines[0] &&
+        /(?:(?:纯|Thuần)|thuần)(?:(?:血|Huyết)(?:龙|Long)|Huyết Long)|(?:龙王|Long Vương)|(?:龙神|Long Thần)/.test(
+          beast.bloodlines[0].selection.text,
+        ))
     );
   }
 
@@ -295,7 +301,12 @@
       }
     }
     character.attributes = Array.from(
-      new Set([...(character.attributes || []).filter((item) => !/^((?:Cực Trí|Cực Trí))?.+((?:Pháp tắc sơ khai|Pháp tắc sơ khai)|(?:Pháp tắc|pháp tắc))?$/.test(item)), ...staged]),
+      new Set([
+        ...(character.attributes || []).filter(
+          (item) => !/^((?:(?:极致|Cực trí)|Cực Trí))?.+((?:(?:法则雏形|Pháp tắc sơ hình)|Pháp tắc sơ khai)|(?:(?:法则|Pháp tắc)|pháp tắc))?$/.test(item),
+        ),
+        ...staged,
+      ]),
     );
     character.traits = Array.from(
       new Set([...(character.traits || []).filter((item) => !item.endsWith("Pháp tắc sơ khai")), ...prototypes]),
@@ -389,19 +400,35 @@
   function applyTextSemantics(ctx, { allowDeath = false, beast = false } = {}) {
     const text = String(ctx.option.text || "");
     if (beast) {
-      const gain = parseSigned(text, [/(?:修为|Tu vi)\+([0-9]+)(?:年|Năm)/, /(?:年限修为|Niên Hạn Tu Vi)\+([0-9]+)(?:年|Năm)/, /(?:增加|tăng thêm)([0-9]+)(?:年|Năm)(?:修为|Tu vi)/]);
-      const loss = parseSigned(text, [/(?:修为|Tu vi)(?:(?:掉落|rơi ra)|(?:减少|giảm bớt))([0-9]+)(?:年|Năm)/, /(?:修为|Tu vi)-([0-9]+)(?:年|Năm)/]);
+      const gain = parseSigned(text, [
+        /(?:(?:修为|tu vi)|Tu vi)\+([0-9]+)(?:年|Năm)/,
+        /(?:年限修为|Niên Hạn Tu Vi)\+([0-9]+)(?:年|Năm)/,
+        /(?:(?:增加|Tăng thêm)|tăng thêm)([0-9]+)(?:年|Năm)(?:(?:修为|tu vi)|Tu vi)/,
+      ]);
+      const loss = parseSigned(text, [
+        /(?:(?:修为|tu vi)|Tu vi)(?:(?:(?:掉落|Rơi ra)|rơi ra)|(?:(?:减少|Giảm bớt)|giảm bớt))([0-9]+)(?:年|Năm)/,
+        /(?:(?:修为|tu vi)|Tu vi)-([0-9]+)(?:年|Năm)/,
+      ]);
       if (gain != null) ctx.state.character.beastYears += gain;
       if (loss != null) ctx.state.character.beastYears = Math.max(0, ctx.state.character.beastYears - loss);
     } else {
-      const gain = parseSigned(text, [/(?:等级|Cấp bậc)\+([0-9]+)/, /(?:魂力|Hồn Lực)(?:(?:提升|nâng cấp)|(?:增加|tăng thêm)).*?([0-9]+)(?:级|Cấp)/]);
-      const loss = parseSigned(text, [/(?:等级|Cấp bậc)-([0-9]+)/, /(?:掉落|rơi ra)([0-9]+)(?:级|Cấp)/]);
+      const gain = parseSigned(text, [
+        /(?:等级|Cấp bậc)\+([0-9]+)/,
+        /(?:魂力|Hồn Lực)(?:(?:(?:提升|Nâng cao)|nâng cấp)|(?:(?:增加|Tăng thêm)|tăng thêm)).*?([0-9]+)(?:级|Cấp)/,
+      ]);
+      const loss = parseSigned(text, [/(?:等级|Cấp bậc)-([0-9]+)/, /(?:(?:掉落|Rơi ra)|rơi ra)([0-9]+)(?:级|Cấp)/]);
       if (gain != null)
         ctx.state.character.level = characterLevelCap(ctx.state.character, ctx.state.character.level + gain);
       if (loss != null)
         ctx.state.character.level = characterLevelCap(ctx.state.character, ctx.state.character.level - loss);
     }
-    if (allowDeath && /(?:(?:死亡|Tử Vong)|(?:战死|tử trận)|(?:陨落|Vẫn lạc)|(?:击杀|hạ gục)|(?:杀死|giết chết)|(?:自爆|tự bạo)|(?:反杀|phản sát))/.test(text) && !/(?:(?:免死|miễn tử)|(?:免疫|miễn nhiễm)|(?:不会|sẽ không)|(?:无|Không)(?:事发生|chuyện xảy ra))/.test(text))
+    if (
+      allowDeath &&
+      /(?:(?:(?:死亡|Tử vong)|Tử Vong)|(?:(?:战死|Chiến tử)|tử trận)|(?:陨落|Vẫn lạc)|(?:(?:击杀|Kích sát)|hạ gục)|(?:(?:杀死|Giết chết)|giết chết)|(?:(?:自爆|Tự bạo)|tự bạo)|(?:(?:反杀|Phản sát)|phản sát))/.test(
+        text,
+      ) &&
+      !/(?:(?:(?:免死|Miễn tử)|miễn tử)|(?:(?:免疫|Miễn dịch)|miễn nhiễm)|(?:(?:不会|Sẽ không)|sẽ không)|(?:无|Không)(?:(?:事发生|Chuyện xảy ra)|chuyện xảy ra))/.test(text)
+    )
       ctx.finishDeath(text);
   }
 
@@ -688,7 +715,7 @@
         beast.bloodlines.push({ selection: selected, percentage: 0, typeOptionId: pending.typeOptionId });
       }
       const elementMatch = String(ctx.option.text).match(
-        /(?:(?:có sẵn|có sẵn)|(?:nhận được|nhận được))((?:Cực Trí|Cực Trí))?([NhuệKimMộcThủyHỏaThổBăngLôiPhongQuangÁmTinhThầnKhôngGianThờiGianSinhMệnhHủyDiệtLựcLượng]+)(?:(?:thuộc tính|thuộc tính)|(?:pháp tắc|pháp tắc))/,
+        /(?:(?:(?:自带|Có sẵn)|có sẵn)|(?:(?:获得|Nhận được)|nhận được))((?:(?:极致|Cực trí)|Cực Trí))?([锐金木水火土冰雷风光暗精神空间时间生命毁灭力量]+)(?:(?:(?:属性|Thuộc tính)|thuộc tính)|(?:(?:法则|Pháp tắc)|pháp tắc))/,
       );
       if (elementMatch) changeBeastAttribute(ctx.state.character, elementMatch[2], elementMatch[1] ? 2 : 1);
       syncBeast(ctx.state.character);
@@ -733,7 +760,7 @@
       if (ctx.step.id.startsWith("humanRingSpecies") && pendingRing) return customHandlers.finalizeSoulRingSpecies(ctx);
       const category = MARTIAL_CATEGORIES[ctx.step.poolId] || "Võ Hồn đặc biệt";
       const tags = [];
-      if (/(?:剑|kiếm)/.test(ctx.option.text)) tags.push("sword");
+      if (/(?:(?:剑|Kiếm)|kiếm)/.test(ctx.option.text)) tags.push("sword");
       if (/(?:龙|Long)/.test(ctx.option.text) || /(?:龙|Long)(?:血脉|huyết mạch)/.test(category)) tags.push("dragon");
       const soul = {
         soulId: ctx.option.id,
@@ -754,7 +781,8 @@
       );
     },
     beastHunter300(ctx) {
-      if (ctx.state.character.beastYears < 300) ctx.finishDeath("Bị Đại Hồn Sư cấp 20 săn giết, tu vi chưa đầy 300 năm");
+      if (ctx.state.character.beastYears < 300)
+        ctx.finishDeath("Bị Đại Hồn Sư cấp 20 săn giết, tu vi chưa đầy 300 năm");
     },
     prepareSoulRing(ctx) {
       if (!ctx.state.pendingRing)
@@ -860,7 +888,7 @@
         );
     },
     finishRemainingHumanSeaTrial(ctx) {
-      if (/(?:是|Đúng)|(?:完成|hoàn thành)/.test(ctx.option.text) && ctx.state.character.seaTrial)
+      if (/(?:(?:是|Là)|Đúng)|(?:(?:完成|Hoàn thành)|hoàn thành)/.test(ctx.option.text) && ctx.state.character.seaTrial)
         ctx.state.character.seaTrial.currentStage = ctx.state.character.seaTrial.totalStages;
     },
     claimXiaoWuSacrificeLoot(ctx) {
@@ -899,7 +927,11 @@
       ctx.state.character.flags.pendingSelfCreatedGodhoodOptionId = ctx.option.id;
     },
     resolveTierSoulBeastDeath(ctx) {
-      if (!ctx.state.character.martialSouls.some((soul) => ["Cực Trí Võ Hồn", "Võ Hồn Loại Khái Niệm"].includes(soul.category)))
+      if (
+        !ctx.state.character.martialSouls.some((soul) =>
+          ["Cực Trí Võ Hồn", "Võ Hồn Loại Khái Niệm"].includes(soul.category),
+        )
+      )
         ctx.finishDeath(ctx.option.text);
     },
     resolveSinOrVirtuePersecution(ctx) {
@@ -907,12 +939,12 @@
       if (!safe.some((title) => ctx.state.character.titles.includes(title))) ctx.finishDeath(ctx.option.text);
     },
     resolveHallNonGodWarEntry(ctx) {
-      if (!ctx.state.character.godhood && /(?:是|Đúng)/.test(ctx.option.text)) ctx.finishDeath(ctx.option.text);
+      if (!ctx.state.character.godhood && /(?:(?:是|Là)|Đúng)/.test(ctx.option.text)) ctx.finishDeath(ctx.option.text);
     },
     advanceBeastGrowth(ctx) {
       const years = number(
         ctx.option.beastGrowthDelta,
-        number(parseSigned(ctx.option.text, [/(?:(?:修为|Tu vi)|(?:年限修为|Niên Hạn Tu Vi))\+([0-9]+)(?:年|Năm)/]), 0),
+        number(parseSigned(ctx.option.text, [/(?:(?:(?:修为|tu vi)|Tu vi)|(?:年限修为|Niên Hạn Tu Vi))\+([0-9]+)(?:年|Năm)/]), 0),
       );
       ctx.state.character.beastYears = Math.max(0, ctx.state.character.beastYears + years);
       const time = number(ctx.option.beastTimeYears, 10);
@@ -935,7 +967,9 @@
               : escape.normal
           : escape.normal;
         if (ctx.state.character.beastYears < threshold)
-          ctx.finishDeath(`Hồn Thú gặp nạn tử vong（Chưa đạt${Number.isFinite(threshold) ? threshold : "Long Tộc"} Điều kiện đào thoát năm）`);
+          ctx.finishDeath(
+            `Hồn Thú gặp nạn tử vong（Chưa đạt${Number.isFinite(threshold) ? threshold : "Long Tộc"} Điều kiện đào thoát năm）`,
+          );
         return;
       }
       if (BEAST_DIRECT_DEATHS.has(optionId)) {
@@ -977,12 +1011,16 @@
       }
       if (optionId === "c66685") {
         if (beast.nameSuffixes.includes("Chủ Tể")) return;
-        if (/(?:路边|ven đường)/.test((beast.species && beast.species.text) || "")) {
+        if (/(?:(?:路边|Bên đường)|ven đường)/.test((beast.species && beast.species.text) || "")) {
           ctx.finishDeath("Bản thể Hồn Thú bên đường sau khi tiến vào Sinh Mệnh Chi Trì thì huyết mạch sụp đổ");
           return;
         }
         beast.bloodlines = beast.bloodlines.filter(
-          (item, index) => index === 0 || !/((?:纯血|thuần huyết)|(?:龙王|Long Vương)|(?:主宰|Chủ Tể))/.test((item.selection && item.selection.text) || ""),
+          (item, index) =>
+            index === 0 ||
+            !/((?:(?:纯血|Thuần huyết)|thuần huyết)|(?:龙王|Long Vương)|(?:(?:主宰|Chủ tể)|Chủ Tể))/.test(
+              (item.selection && item.selection.text) || "",
+            ),
         );
         syncBeast(ctx.state.character);
         return;
@@ -1042,10 +1080,10 @@
       else throw new Error(`Hồn Thú trưởng thành đặc biệt ${ctx.option.id} Thiếu cấu hình bộ xử lý`);
     },
     advanceBeastElement(ctx) {
-      changeBeastAttribute(ctx.state.character, optionName(ctx.option).replace(/(?:元素|nguyên tố)$/, ""), 1);
+      changeBeastAttribute(ctx.state.character, optionName(ctx.option).replace(/(?:(?:元素|Nguyên tố)|nguyên tố)$/, ""), 1);
     },
     advanceBeastEvolutionDirection(ctx) {
-      const name = optionName(ctx.option).replace(/(?:方向|phương hướng)|(?:属性|thuộc tính)|(?:元素|nguyên tố)/g, "");
+      const name = optionName(ctx.option).replace(/(?:(?:方向|Phương hướng)|phương hướng)|(?:(?:属性|Thuộc tính)|thuộc tính)|(?:(?:元素|Nguyên tố)|nguyên tố)/g, "");
       if (name) changeBeastAttribute(ctx.state.character, name, 1);
     },
     refineBeastBloodline(ctx) {
@@ -1131,8 +1169,10 @@
     if (stage >= trial.totalStages) {
       trial.status = "completed";
       if (field === "godTrial" && !ctx.state.character.ending) {
-        const defaultCaps = { 'Tam Cấp': 109, 'Nhị Cấp': 119, 'Nhất Cấp': 139, 'Thần Vương': 159 };
-        const capMatch = ctx.option.text.match(/(?:(?:解除到|giải trừ đến)|(?:解除为|giải trừ thành))([0-9]+)(?:级|Cấp)/);
+        const defaultCaps = { "Tam Cấp": 109, "Nhị Cấp": 119, "Nhất Cấp": 139, "Thần Vương": 159 };
+        const capMatch = ctx.option.text.match(
+          /(?:(?:(?:解除到|Giải trừ đến)|giải trừ đến)|(?:(?:解除为|Giải trừ thành)|giải trừ thành))([0-9]+)(?:级|Cấp)/,
+        );
         ctx.applyEffects([
           {
             type: "grantGodhood",
@@ -1147,7 +1187,7 @@
   }
 
   function chineseDigit(value) {
-    const digits = { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10 };
+    const digits = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10 };
     return digits[value] || number(value);
   }
 
@@ -1155,48 +1195,68 @@
     const c = ctx.state.character;
     const value = ctx.option.text;
     applyTextSemantics(ctx);
-    if (/(?:Dung mạo|Dung mạo)\+1/.test(value)) c.appearanceRank = Math.min(7, number(c.appearanceRank) + 1);
-    if (/(?:Lĩnh vực sơ khai|Lĩnh vực sơ khai)/.test(value)) {
+    if (/(?:容貌|Dung mạo)\+1/.test(value)) c.appearanceRank = Math.min(7, number(c.appearanceRank) + 1);
+    if (/(?:(?:领域|Lĩnh vực)(?:雏形|Sơ hình)|Lĩnh vực sơ khai)/.test(value)) {
       c.flags.pendingDomainPrototype = true;
-      addUnique(c.traits, `${field === "godTrial" ? (c.godTrial && c.godTrial.deityName) || "Thần khảo" : "Hải Thần"} Lĩnh vực sơ khai`);
+      addUnique(
+        c.traits,
+        `${field === "godTrial" ? (c.godTrial && c.godTrial.deityName) || "Thần khảo" : "Hải Thần"} Lĩnh vực sơ khai`,
+      );
     }
-    if (/(?:Nhận được Lĩnh vực của Thần Vị hiện tại|Nhận được Lĩnh vực của Thần Vị hiện tại)/.test(value)) addUnique(c.domains, `${(c.godTrial && c.godTrial.deityName) || "Thần khảo"} Lĩnh vực`);
-    if (/(?:Nhận được phôi Thần Khí|Nhận được phôi Thần Khí)|(?:nhận được hiện tại|nhận được hiện tại)(?:Thần Vị|Thần Vị)(?:phôi Thần Khí|Thần Khí phôi thai)/.test(value)) {
+    if (/(?:(?:获得当前|Nhận được hiện tại)(?:神位|Thần Vị)(?:的|Của)(?:领域|Lĩnh vực)|Nhận được Lĩnh vực của Thần Vị hiện tại)/.test(value))
+      addUnique(c.domains, `${(c.godTrial && c.godTrial.deityName) || "Thần khảo"} Lĩnh vực`);
+    if (
+      /(?:(?:获得|Nhận được)(?:神器|Thần Khí)(?:胚胎|Phôi thai)|Nhận được phôi Thần Khí)|(?:(?:获得当前|Nhận được hiện tại)|nhận được hiện tại)(?:神位|Thần Vị)(?:(?:神器|Thần Khí)(?:胚胎|Phôi thai)|Thần Khí phôi thai)/.test(
+        value,
+      )
+    ) {
       const id = `${field}:artifact:${field === "godTrial" ? (c.godTrial && c.godTrial.deityId) || "unknown" : "sea"}`;
       if (!c.artifacts.some((item) => item.id === id))
         c.artifacts.push({
           id,
-          name: field === "godTrial" ? `${(c.godTrial && c.godTrial.deityName) || "Thần Vị"} Thần Khí phôi thai` : "Phôi Thần Khí Hải Thần Khảo Hạch",
+          name:
+            field === "godTrial"
+              ? `${(c.godTrial && c.godTrial.deityName) || "Thần Vị"} Thần Khí phôi thai`
+              : "Phôi Thần Khí Hải Thần Khảo Hạch",
           stage: "embryo",
           rank: 0,
           sourceOptionId: ctx.option.id,
         });
     }
-    if (/(?:Thần Khí|Thần Khí)(?:thăng cấp vị cách|thăng cấp vị cách)1(?:Cấp|Cấp)/.test(value)) {
+    if (/(?:神器|Thần Khí)(?:(?:位格提升|Thăng tiến vị cách)|thăng cấp vị cách)1(?:级|Cấp)/.test(value)) {
       const artifact = c.artifacts[c.artifacts.length - 1];
       if (artifact) {
         artifact.rank = number(artifact.rank) + 1;
         artifact.stage = "complete";
       }
     }
-    const ringMatch = value.match(/(?:toàn bộ|toàn bộ)(?:Hồn Hoàn|Hồn Hoàn)(?:(?:Năm|Năm)(?:hạn mức|hạn mức))?(?:(?:nâng cấp|nâng cấp)|\+(?:Hồn Cốt|Hồn Cốt)(?:nâng cấp|nâng cấp))([0-9]+)(?:Năm|Năm)/);
+    const ringMatch = value.match(
+      /(?:(?:全部|Toàn bộ)|toàn bộ)(?:魂环|Hồn Hoàn)(?:(?:年|Năm)(?:(?:限|Hạn)|hạn mức))?(?:(?:(?:提升|Nâng cao)|nâng cấp)|\+(?:魂骨|Hồn Cốt)(?:(?:提升|Nâng cao)|nâng cấp))([0-9]+)(?:年|Năm)/,
+    );
     if (ringMatch) effects.changeAllSoulRingYears(c, { amount: number(ringMatch[1]) });
-    const boneRaise = value.match(/(?:toàn bộ|toàn bộ)(?:Hồn Cốt|Hồn Cốt)(?:(?:Năm|Năm)(?:hạn mức|hạn mức))?(?:nâng cấp|nâng cấp)([0-9]+)(?:Năm|Năm)/);
+    const boneRaise = value.match(
+      /(?:(?:全部|Toàn bộ)|toàn bộ)(?:魂骨|Hồn Cốt)(?:(?:年|Năm)(?:(?:限|Hạn)|hạn mức))?(?:(?:提升|Nâng cao)|nâng cấp)([0-9]+)(?:年|Năm)/,
+    );
     if (boneRaise) effects.changeAllSoulBoneYears(c, { amount: number(boneRaise[1]) });
-    if (/(?:toàn bộ|toàn bộ)(?:Hồn Hoàn|Hồn Hoàn)\+(?:Hồn Cốt|Hồn Cốt)(?:nâng cấp|nâng cấp)/.test(value) && ringMatch)
+    if (/(?:(?:全部|Toàn bộ)|toàn bộ)(?:魂环|Hồn Hoàn)\+(?:魂骨|Hồn Cốt)(?:(?:提升|Nâng cao)|nâng cấp)/.test(value) && ringMatch)
       effects.changeAllSoulBoneYears(c, { amount: number(ringMatch[1]) });
-    const boneReward = value.match(/(?:(?:1|1)(?:khối|khối))?([0-9NhấtNhịTamTứNgũLụcThấtBátCửuThập]+)(?:Vạn Niên Hồn Cốt|Vạn Niên Hồn Cốt)/);
+    const boneReward = value.match(/(?:(?:一|1)(?:(?:块|Khối)|khối))?([0-9NhấtNhịTamTứNgũLụcThấtBátCửu]+)(?:万年魂骨|Vạn Niên Hồn Cốt)/);
     if (boneReward)
       ctx.state.pendingSoulBone = { years: chineseDigit(boneReward[1]) * 10000, source: selection(ctx.option) };
-    if (/(?:Thần Khải|Thần Khải)(?:trang bị|trang bị)/.test(value)) {
+    if (/(?:(?:神|Thần)(?:铠|Giáp)|Thần Khải)(?:(?:着装|Trang bị)|trang bị)/.test(value)) {
       if (c.soulBones.length < 6)
-        ctx.finishDeath(`${(c.godTrial && c.godTrial.deityName) || "Thần khảo"}：Chưa thu thập đủ 6 khối Hồn Cốt khi kế thừa Thần Giáp`);
+        ctx.finishDeath(
+          `${(c.godTrial && c.godTrial.deityName) || "Thần khảo"}：Chưa thu thập đủ 6 khối Hồn Cốt khi kế thừa Thần Giáp`,
+        );
       else addUnique(c.traits, `${(c.godTrial && c.godTrial.deityName) || "Thần Vị"} Thần Khải`);
     }
-    if (/(?:Lĩnh vực|Lĩnh vực)(?:thăng cấp vị cách|thăng cấp vị cách)1(?:Cấp|Cấp)/.test(value)) c.flags.godTrialDomainRank = number(c.flags.godTrialDomainRank) + 1;
-    const cap = value.match(/(?:Cấp bậc|Cấp bậc)(?:giải trừ hạn chế|giải trừ hạn chế)(?:(?:đến|đến)|(?:thành|thành))([0-9]+)(?:Cấp|Cấp)/);
+    if (/(?:领域|Lĩnh vực)(?:(?:位格提升|Thăng tiến vị cách)|thăng cấp vị cách)1(?:级|Cấp)/.test(value))
+      c.flags.godTrialDomainRank = number(c.flags.godTrialDomainRank) + 1;
+    const cap = value.match(
+      /(?:等级|Cấp bậc)(?:(?:限制解除|Giải trừ hạn chế)|giải trừ hạn chế)(?:(?:(?:到|Đến)|đến)|(?:(?:为|Thành)|thành))([0-9]+)(?:级|Cấp)/,
+    );
     if (cap) c.maxLevel = Math.max(c.maxLevel, number(cap[1]));
-    if (/(?:Võ Hồn thức tỉnh lần hai|Võ Hồn thức tỉnh lần hai)/.test(value))
+    if (/(?:(?:武魂|Võ Hồn)(?:二次觉醒|Thức tỉnh lần hai)|Võ Hồn thức tỉnh lần hai)/.test(value))
       c.flags.martialAwakeningReturnStep = field === "seaTrial" ? "humanSeaTrialContinue" : "humanGodTrialContinue";
   }
 
@@ -1205,18 +1265,23 @@
     const beast = ensureBeast(ctx.state.character);
     const thresholdMatch = ctx.step.id.match(/([0-9]{6,7})$/);
     const threshold = thresholdMatch ? number(thresholdMatch[1]) : ctx.state.character.beastYears;
-    if (/^(?:Đúng|Đúng)/.test(text) && !/(?:thất bại|thất bại)/.test(text)) {
+    if (/^(?:(?:是|Là)|Đúng)/.test(text) && !/(?:(?:失败|Thất bại)|thất bại)/.test(text)) {
       markBeastTribulation(ctx, threshold);
-      const bonus = parseSigned(text, [/(?:Tu vi|Tu vi)\+([0-9]+)(?:Năm|Năm)/]);
+      const bonus = parseSigned(text, [/(?:(?:修为|tu vi)|Tu vi)\+([0-9]+)(?:年|Năm)/]);
       if (bonus) ctx.state.character.beastYears += bonus;
-      if (/(?:Lôi|Lôi)(?:thuộc tính|thuộc tính)(?:cộng dồn|cộng dồn)/.test(text)) changeBeastAttribute(ctx.state.character, "Lôi", 1);
-    } else if (text.match(/(?:rơi ra|rơi ra)(?:Tu vi|Tu vi)([0-9]+)(?:Năm|Năm)/)) {
-      const amount = number(text.match(/(?:rơi ra|rơi ra)(?:Tu vi|Tu vi)([0-9]+)(?:Năm|Năm)/)[1]);
+      if (/(?:雷|Lôi)(?:(?:属性|Thuộc tính)|thuộc tính)(?:(?:叠加|Cộng dồn)|cộng dồn)/.test(text))
+        changeBeastAttribute(ctx.state.character, "Lôi", 1);
+    } else if (text.match(/(?:(?:掉落|Rơi ra)|rơi ra)(?:(?:修为|tu vi)|Tu vi)([0-9]+)(?:年|Năm)/)) {
+      const amount = number(text.match(/(?:(?:掉落|Rơi ra)|rơi ra)(?:(?:修为|tu vi)|Tu vi)([0-9]+)(?:年|Năm)/)[1]);
       if (!consumeLightningShield(ctx, threshold))
         ctx.state.character.beastYears = Math.max(0, ctx.state.character.beastYears - amount);
-    } else if (/(?:mất đi|mất đi)(?:1|1)(?:cái|cái)(?:thuộc tính|thuộc tính)/.test(text)) {
-      removeRandomBeastAttribute(ctx, `đột phá${threshold / 10000} Thuộc tính sụp đổ khi gặp Vạn Niên Lôi Kiếp`, /(?:Nếu|Nếu)(?:Không|Không)(?:thuộc tính|thuộc tính)(?:thì ngay lập tức|thì ngay lập tức)(?:Tử Vong|Tử Vong)/.test(text));
-    } else if (/(?:Tử Vong|Tử Vong)/.test(text)) ctx.finishDeath(`đột phá${threshold / 10000} Vạn năm lôi kiếp thất bại`);
+    } else if (/(?:(?:失去|Mất đi)|mất đi)(?:一|1)(?:(?:个|Cái)|cái)(?:(?:属性|Thuộc tính)|thuộc tính)/.test(text)) {
+      removeRandomBeastAttribute(
+        ctx,
+        `đột phá${threshold / 10000} Thuộc tính sụp đổ khi gặp Vạn Niên Lôi Kiếp`,
+        /(?:若|Nếu)(?:无|Không)(?:(?:属性|Thuộc tính)|thuộc tính)(?:(?:则当场|Thì ngay tại chỗ)|thì ngay lập tức)(?:(?:死亡|Tử vong)|Tử Vong)/.test(text),
+      );
+    } else if (/(?:(?:死亡|Tử vong)|Tử Vong)/.test(text)) ctx.finishDeath(`đột phá${threshold / 10000} Vạn năm lôi kiếp thất bại`);
     else throw new Error(`Tùy chọn lôi kiếp ${ctx.option.id} Không có kết quả cấu trúc hóa`);
     syncBeast(ctx.state.character);
   }
@@ -1374,7 +1439,8 @@
     const prototypes = ctx.state.character.traits.filter((item) => item.endsWith("Pháp tắc sơ khai")).length;
     switch (ctx.option.id) {
       case "640267":
-        if (beast.laws.length < 1 && prototypes < 2) ctx.finishDeath("Bị Hải Thần phản sát khi tranh đoạt quyền hạn Thần Vị");
+        if (beast.laws.length < 1 && prototypes < 2)
+          ctx.finishDeath("Bị Hải Thần phản sát khi tranh đoạt quyền hạn Thần Vị");
         else {
           ctx.state.character.godhood = { id: "beast-god-and-sea-god", name: "Thú Thần và Hải Thần" };
           addUnique(ctx.state.character.titles, "Hải Thần");
@@ -1635,7 +1701,11 @@
       return typeof next === "string" ? next : "humanPlan";
     },
     completeHumanStory(ctx) {
-      ctx.finishEnding("douluo1-human-stage-ending", "Đấu La Đại Lục phần Chung chương", "Vận mệnh đã đi hết chương Đấu La Đại Lục.");
+      ctx.finishEnding(
+        "douluo1-human-stage-ending",
+        "Đấu La Đại Lục phần Chung chương",
+        "Vận mệnh đã đi hết chương Đấu La Đại Lục.",
+      );
       return null;
     },
     continueHumanGodTrial(ctx) {
@@ -1660,7 +1730,11 @@
       const branch =
         ctx.state.character.storyBranch === 1 ? "shrek" : ctx.state.character.storyBranch === 2 ? "hall" : "other";
       ctx.state.character.flags[`humanStory:${branch}:25`] = true;
-      ctx.finishEnding("douluo1-human-late-ending", "Kết cục Đấu La Đại Lục", "Chiến tranh tuyến chính và lựa chọn cuối cùng đã kết thúc.");
+      ctx.finishEnding(
+        "douluo1-human-late-ending",
+        "Kết cục Đấu La Đại Lục",
+        "Chiến tranh tuyến chính và lựa chọn cuối cùng đã kết thúc.",
+      );
       return null;
     },
     chooseHumanSacrificeResult(ctx) {
@@ -1724,7 +1798,8 @@
     },
     routeBeastGodFinale(ctx) {
       const beast = ensureBeast(ctx.state.character);
-      if (!beast.beastGod || !ctx.state.character.godhood) throw new Error("Chưa đạt được Thần Vị Thú Thần hoàn chỉnh nhưng đã tiến vào kết cục Thú Thần");
+      if (!beast.beastGod || !ctx.state.character.godhood)
+        throw new Error("Chưa đạt được Thần Vị Thú Thần hoàn chỉnh nhưng đã tiến vào kết cục Thú Thần");
       ctx.state.character.flags.beastFinalePending = true;
       ctx.state.character.flags.beastHasXueDiInteraction = number(beast.interactions.snowEmpress) >= 1;
       ctx.state.character.flags.beastCanBringBingDi = number(beast.interactions.iceEmpress) >= 3;
@@ -2016,7 +2091,8 @@
               errors.push(`${at}.legacyNext[${index}].stepId Không tồn tại：${branch.stepId}`);
             if (branch.endingId && !maps.endings.has(branch.endingId))
               errors.push(`${at}.legacyNext[${index}].endingId Không tồn tại：${branch.endingId}`);
-            if (!branch.stepId && !branch.endingId) errors.push(`${at}.legacyNext[${index}] Thiếu stepId hoặc endingId`);
+            if (!branch.stepId && !branch.endingId)
+              errors.push(`${at}.legacyNext[${index}] Thiếu stepId hoặc endingId`);
           });
       }
       if (!flow.poolId && !flow.action) errors.push(`${at} Phải bao gồm poolId hoặc action`);
@@ -2046,7 +2122,8 @@
     input.packs.forEach((pack, index) => {
       const checked = validateContent(pack);
       if (!checked.ok) errors.push(...checked.errors.map((error) => `packs[${index}]: ${error}`));
-      else if (ids.has(checked.content.id)) errors.push(`packs[${index}]: Gói nội dung bị trùng lặp ${checked.content.id}`);
+      else if (ids.has(checked.content.id))
+        errors.push(`packs[${index}]: Gói nội dung bị trùng lặp ${checked.content.id}`);
       else {
         ids.add(checked.content.id);
         packs.push(checked.content);
@@ -2187,7 +2264,8 @@
     if (!isObject(state)) return { ok: false, errors: ["Bản lưu phải là một đối tượng"], state: null };
     const maps = mapsFor(content);
     if (state.schema !== SAVE_SCHEMA) errors.push(`schema Phải là ${SAVE_SCHEMA}`);
-    if (state.engineVersion !== ENGINE_VERSION) errors.push(`engineVersion Không tương thích：${state.engineVersion || "Chưa rõ"}`);
+    if (state.engineVersion !== ENGINE_VERSION)
+      errors.push(`engineVersion Không tương thích：${state.engineVersion || "Chưa rõ"}`);
     if (state.contentId !== content.id) errors.push(`contentId Không khớp：${state.contentId || "Chưa rõ"}`);
     if (state.contentVersion !== content.version)
       errors.push(`contentVersion Không khớp：${state.contentVersion || "Chưa rõ"}`);
@@ -2206,9 +2284,12 @@
       errors.push("Trạng thái số ngẫu nhiên không hợp lệ");
     if (!isObject(state.character) || !isObject(state.character.flags) || !Array.isArray(state.character.martialSouls))
       errors.push("Trạng thái nhân vật không hợp lệ");
-    if (!Array.isArray(state.timeline) || !Array.isArray(state.excludedOptionIds)) errors.push("Trạng thái biên niên sử hoặc loại trừ không hợp lệ");
-    if (!["awaiting-spin", "result", "ended", "error"].includes(state.status)) errors.push(`Trạng thái không xác định：${state.status}`);
-    if (state.status === "result" && (!state.lastResult || !state.awaitingAdvance)) errors.push("Kết quả chờ xác nhận không đầy đủ");
+    if (!Array.isArray(state.timeline) || !Array.isArray(state.excludedOptionIds))
+      errors.push("Trạng thái biên niên sử hoặc loại trừ không hợp lệ");
+    if (!["awaiting-spin", "result", "ended", "error"].includes(state.status))
+      errors.push(`Trạng thái không xác định：${state.status}`);
+    if (state.status === "result" && (!state.lastResult || !state.awaitingAdvance))
+      errors.push("Kết quả chờ xác nhận không đầy đủ");
     if (state.status === "ended" && !state.ending) errors.push("Trạng thái kết thúc thiếu kết cục");
     for (const field of ["undoCheckpoint", "manualCheckpoint"]) {
       if (state[field] != null) {
@@ -2401,7 +2482,11 @@
         state.character.flags.beastHasPseudoReverse = false;
         beast.pseudoReverseShield = null;
       }
-      state.timeline.push({ kind: "system", text: `Phản chuyển thuật thức triệt tiêu kết quả chí mạng：${cause}`, major: true });
+      state.timeline.push({
+        kind: "system",
+        text: `Phản chuyển thuật thức triệt tiêu kết quả chí mạng：${cause}`,
+        major: true,
+      });
       return false;
     }
     const ending = endingRecord(state, {
@@ -2529,7 +2614,8 @@
       actions += 1;
       if (state.status === "ended") break;
       if (!next) throw new Error(`Hành động quy trình ${step.action} Không trả về nút tiếp theo`);
-      if (!maps.flows.has(next)) throw new Error(`Hành động quy trình ${step.action} Trả về nút không xác định：${next}`);
+      if (!maps.flows.has(next))
+        throw new Error(`Hành động quy trình ${step.action} Trả về nút không xác định：${next}`);
       state.currentStepId = next;
     }
     if (state.status !== "ended") {
@@ -2549,7 +2635,8 @@
     actionAdvance(content, state);
     const step = currentStep(content, state);
     const pool = currentPool(content, state);
-    if (!step || !pool) throw new Error(`Quy trình hiện tại không phải là vòng quay có thể rút：${state.currentStepId}`);
+    if (!step || !pool)
+      throw new Error(`Quy trình hiện tại không phải là vòng quay có thể rút：${state.currentStepId}`);
     const legal = eligibleOptions(content, state);
     if (!legal.length) throw new Error(`Vòng quay“${pool.name}”Không có kết quả khả dụng thỏa mãn điều kiện`);
     const forcedId = options.forceOptionId || state.forcedResults[state.currentStepId];
@@ -2572,7 +2659,11 @@
       poolName: pool.name,
       optionId: selected.id,
       text: selected.text,
-      major: !!selected.major || /(?:结局|Kết cục)|(?:死亡|Tử Vong)|(?:神位|Thần Vị)|(?:献祭|Hiến tế)|(?:天劫|thiên kiếp)|(?:神考|Thần khảo)/.test(selected.text),
+      major:
+        !!selected.major ||
+        /(?:结局|Kết cục)|(?:(?:死亡|Tử vong)|Tử Vong)|(?:神位|Thần Vị)|(?:献祭|Hiến tế)|(?:天劫|thiên kiếp)|(?:神考|Thần khảo)/.test(
+          selected.text,
+        ),
     };
     state.timeline.push(entry);
     state.lastResult = { ...entry, weight: selected.weight, wheelLabel: selected.wheelLabel || selected.text };
@@ -2705,11 +2796,16 @@
           steps += 1;
         }
       }
-      if (steps >= max && state.status !== "ended") state = finishWithError(state, `Suy diễn cực tốc đạt đến ${max} Giới hạn an toàn bước`);
+      if (steps >= max && state.status !== "ended")
+        state = finishWithError(state, `Suy diễn cực tốc đạt đến ${max} Giới hạn an toàn bước`);
     } catch (error) {
       state = finishWithError(state, error);
     }
-    return { state, steps, limited: state.status === "error" && /(?:安全|An toàn)(?:上限|Giới hạn trên)/.test(state.error) };
+    return {
+      state,
+      steps,
+      limited: state.status === "error" && /(?:安全|An toàn)(?:上限|Giới hạn trên)/.test(state.error),
+    };
   }
 
   function inspectPool(content, poolId, stateInput = null) {
@@ -2747,7 +2843,8 @@
   }
 
   function migrateLegacySave(content, input, options = {}) {
-    if (options.confirmed !== true) throw new Error("Nâng cấp V1 Phải được người dùng xác nhận rõ ràng trước khi lưu trữ");
+    if (options.confirmed !== true)
+      throw new Error("Nâng cấp V1 Phải được người dùng xác nhận rõ ràng trước khi lưu trữ");
     let legacy = input;
     if (typeof input === "string") {
       try {
@@ -2992,7 +3089,9 @@
                 weight: 10,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "setAppearance", selection: { optionId: "4e3f46", text: "E Cấp (Hơi xấu)" }, rank: 1 }],
+                effects: [
+                  { type: "setAppearance", selection: { optionId: "4e3f46", text: "E Cấp (Hơi xấu)" }, rank: 1 },
+                ],
               },
               {
                 id: "4a43b8",
@@ -3015,7 +3114,10 @@
                 effects: [
                   {
                     type: "setAppearance",
-                    selection: { optionId: "6e3da9", text: "S Cấp (Nhan sắc ngang hàng với Thiên Nhận Tuyết hoặc Đường Tam trước khi xuyên không)" },
+                    selection: {
+                      optionId: "6e3da9",
+                      text: "S Cấp (Nhan sắc ngang hàng với Thiên Nhận Tuyết hoặc Đường Tam trước khi xuyên không)",
+                    },
                     rank: 6,
                   },
                 ],
@@ -3028,7 +3130,11 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setAppearance", selection: { optionId: "b67fd5", text: "A Cấp (Cực kỳ đẹp trai/xinh đẹp)" }, rank: 5 },
+                  {
+                    type: "setAppearance",
+                    selection: { optionId: "b67fd5", text: "A Cấp (Cực kỳ đẹp trai/xinh đẹp)" },
+                    rank: 5,
+                  },
                 ],
               },
               {
@@ -3039,7 +3145,11 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setAppearance", selection: { optionId: "b157d7", text: "B Cấp (7 điểm Trai xinh Gái đẹp)" }, rank: 4 },
+                  {
+                    type: "setAppearance",
+                    selection: { optionId: "b157d7", text: "B Cấp (7 điểm Trai xinh Gái đẹp)" },
+                    rank: 4,
+                  },
                 ],
               },
               {
@@ -3050,7 +3160,11 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setAppearance", selection: { optionId: "3e26b6", text: "D Cấp (Bình thường không có gì lạ)" }, rank: 2 },
+                  {
+                    type: "setAppearance",
+                    selection: { optionId: "3e26b6", text: "D Cấp (Bình thường không có gì lạ)" },
+                    rank: 2,
+                  },
                 ],
               },
               {
@@ -3061,7 +3175,11 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setAppearance", selection: { optionId: "9ce095", text: "F Cấp (Xấu đến phát hờn)" }, rank: 0 },
+                  {
+                    type: "setAppearance",
+                    selection: { optionId: "9ce095", text: "F Cấp (Xấu đến phát hờn)" },
+                    rank: 0,
+                  },
                 ],
               },
               {
@@ -3074,7 +3192,10 @@
                 effects: [
                   {
                     type: "setAppearance",
-                    selection: { optionId: "9eeb0b", text: "EX Cấp dung mạo (Mị ma chuyển thế, không phân biệt giới tính, nam nữ trong nguyên tác đều thích bạn)" },
+                    selection: {
+                      optionId: "9eeb0b",
+                      text: "EX Cấp dung mạo (Mị ma chuyển thế, không phân biệt giới tính, nam nữ trong nguyên tác đều thích bạn)",
+                    },
                     rank: 7,
                   },
                 ],
@@ -3111,7 +3232,9 @@
                 weight: 10,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "addMartialSoulTalent", selection: { optionId: "e486cf", text: "Võ Hồn Loại Khái Niệm" } }],
+                effects: [
+                  { type: "addMartialSoulTalent", selection: { optionId: "e486cf", text: "Võ Hồn Loại Khái Niệm" } },
+                ],
               },
               {
                 id: "6f2ee4",
@@ -3147,7 +3270,9 @@
                 weight: 5,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "addMartialSoulTalent", selection: { optionId: "1a8a97", text: "Thực Vật Hệ Võ Hồn" } }],
+                effects: [
+                  { type: "addMartialSoulTalent", selection: { optionId: "1a8a97", text: "Thực Vật Hệ Võ Hồn" } },
+                ],
               },
             ],
           },
@@ -4288,8 +4413,8 @@
               },
               {
                 id: "734ca4",
-                text: "Cửu Vĩ Linh Hồ",
-                wheelLabel: "Cửu Vĩ Linh Hồ",
+                text: "9 Vĩ Linh Hồ",
+                wheelLabel: "9 Vĩ Linh Hồ",
                 weight: 1,
                 weightDefaulted: true,
                 enabled: true,
@@ -4324,8 +4449,8 @@
               },
               {
                 id: "3673ae",
-                text: "Địa Ngục Ma Miêu",
-                wheelLabel: "Địa Ngục Ma Miêu",
+                text: "Địa Ngục Ma Mèo",
+                wheelLabel: "Địa Ngục Ma Mèo",
                 weight: 1,
                 weightDefaulted: true,
                 enabled: true,
@@ -4513,8 +4638,8 @@
               },
               {
                 id: "233a05",
-                text: "Trị Dũ Thiên Sứ",
-                wheelLabel: "Trị Dũ Thiên Sứ",
+                text: "Trị Liệu Thiên Sứ",
+                wheelLabel: "Trị Liệu Thiên Sứ",
                 weight: 1,
                 weightDefaulted: true,
                 enabled: true,
@@ -4657,8 +4782,8 @@
               },
               {
                 id: "2a2431",
-                text: "Hoàng Kim Đồi Mồi",
-                wheelLabel: "Hoàng Kim Đồi Mồi",
+                text: "Hoàng Kim Đại Mạo",
+                wheelLabel: "Hoàng Kim Đại Mạo",
                 weight: 1,
                 weightDefaulted: true,
                 enabled: true,
@@ -4747,8 +4872,8 @@
               },
               {
                 id: "367da4",
-                text: "Tam Túc Kim Thiềm",
-                wheelLabel: "Tam Túc Kim Thiềm",
+                text: "3 Túc Kim Thiềm",
+                wheelLabel: "3 Túc Kim Thiềm",
                 weight: 1,
                 weightDefaulted: true,
                 enabled: true,
@@ -4792,8 +4917,8 @@
               },
               {
                 id: "8efe39",
-                text: "Kiếm Trạc Phong Điểu",
-                wheelLabel: "Kiếm Trạc Phong Điểu",
+                text: "Kiếm Uế Phong Điểu",
+                wheelLabel: "Kiếm Uế Phong Điểu",
                 weight: 1,
                 weightDefaulted: true,
                 enabled: true,
@@ -4936,8 +5061,8 @@
               },
               {
                 id: "8672eb",
-                text: "Tam Đầu Xích Ma Ngao",
-                wheelLabel: "Tam Đầu Xích Ma Ngao",
+                text: "3 Đầu Xích Ma Ngao",
+                wheelLabel: "3 Đầu Xích Ma Ngao",
                 weight: 1,
                 weightDefaulted: true,
                 enabled: true,
@@ -5053,8 +5178,8 @@
               },
               {
                 id: "5da1df",
-                text: "Cửu Tiết Phỉ Thúy",
-                wheelLabel: "Cửu Tiết Phỉ Thúy",
+                text: "9 Tiết Phỉ Thúy",
+                wheelLabel: "9 Tiết Phỉ Thúy",
                 weight: 1,
                 weightDefaulted: true,
                 enabled: true,
@@ -5197,8 +5322,8 @@
               },
               {
                 id: "7558c8",
-                text: "Thái Thản Tuyết Ma Vương",
-                wheelLabel: "Thái Thản Tuyết Ma Vương",
+                text: "Titan Tuyết Ma Vương",
+                wheelLabel: "Titan Tuyết Ma Vương",
                 weight: 1,
                 weightDefaulted: true,
                 enabled: true,
@@ -6865,8 +6990,8 @@
               },
               {
                 id: "829722",
-                text: "Cực Băng·Băng Bích Đế Hoàng Hạt",
-                wheelLabel: "Cực Băng·Băng Bích Đế Hoàng Hạt",
+                text: "Cực Băng·Băng Bích Đế Vương Yết",
+                wheelLabel: "Cực Băng·Băng Bích Đế Vương Yết",
                 weight: 1,
                 weightDefaulted: true,
                 enabled: true,
@@ -7945,7 +8070,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "addTalent", selection: { optionId: "eeb1a5", text: "Song sinh Võ Hồn (Đi rút thêm 1 Võ Hồn)" } },
+                  {
+                    type: "addTalent",
+                    selection: { optionId: "eeb1a5", text: "Song sinh Võ Hồn (Đi rút thêm 1 Võ Hồn)" },
+                  },
                   { type: "setFlag", key: "extraMartialSoulRollsRemaining", value: 1 },
                 ],
                 next: "humanExtraMartialTalent",
@@ -7958,7 +8086,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "addTalent", selection: { optionId: "0d8ebe", text: "3 sinh Võ Hồn (Đi rút thêm 2 Võ Hồn)" } },
+                  {
+                    type: "addTalent",
+                    selection: { optionId: "0d8ebe", text: "3 sinh Võ Hồn (Đi rút thêm 2 Võ Hồn)" },
+                  },
                   { type: "setFlag", key: "extraMartialSoulRollsRemaining", value: 2 },
                 ],
                 next: "humanExtraMartialTalent",
@@ -7973,7 +8104,10 @@
                 effects: [
                   {
                     type: "addTalent",
-                    selection: { optionId: "8d8212", text: "Biến dị Võ Hồn (Thay thế Võ Hồn nguyên bản của bạn, tiến vào bể Biến dị Võ Hồn)" },
+                    selection: {
+                      optionId: "8d8212",
+                      text: "Biến dị Võ Hồn (Thay thế Võ Hồn nguyên bản của bạn, tiến vào bể Biến dị Võ Hồn)",
+                    },
                   },
                 ],
                 next: "humanMutatedReplacement",
@@ -7986,7 +8120,13 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "addTalent", selection: { optionId: "1748bb", text: "Đạo Tâm Thông Minh (Tuyệt đối không rơi vào tẩu hỏa nhập ma)" } },
+                  {
+                    type: "addTalent",
+                    selection: {
+                      optionId: "1748bb",
+                      text: "Đạo Tâm Thông Minh (Tuyệt đối không rơi vào tẩu hỏa nhập ma)",
+                    },
+                  },
                   { type: "addTrait", traitId: "clear-dao-heart" },
                 ],
                 next: "humanAge",
@@ -8001,7 +8141,10 @@
                 effects: [
                   {
                     type: "addTalent",
-                    selection: { optionId: "056757", text: "Phôi thai Lĩnh vực tiên thiên (Có sẵn lĩnh vực sơ khai, sau cấp 90 hãy đến lĩnh vực hoàn chỉnh để rút một lần)" },
+                    selection: {
+                      optionId: "056757",
+                      text: "Phôi thai Lĩnh vực tiên thiên (Có sẵn lĩnh vực sơ khai, sau cấp 90 hãy đến lĩnh vực hoàn chỉnh để rút một lần)",
+                    },
                   },
                   { type: "addTrait", traitId: "innate-domain-prototype" },
                   { type: "setFlag", key: "pendingDomainPrototype", value: true },
@@ -8018,7 +8161,10 @@
                 effects: [
                   {
                     type: "addTalent",
-                    selection: { optionId: "b84924", text: "Hỗn huyết người và thú (Đến túi Thú Võ Hồn rút thêm một Võ Hồn làm Võ Hồn thứ 2 của bạn)" },
+                    selection: {
+                      optionId: "b84924",
+                      text: "Hỗn huyết người và thú (Đến túi Thú Võ Hồn rút thêm một Võ Hồn làm Võ Hồn thứ 2 của bạn)",
+                    },
                   },
                   { type: "addTrait", traitId: "human-beast-hybrid" },
                 ],
@@ -8034,7 +8180,10 @@
                 effects: [
                   {
                     type: "addTalent",
-                    selection: { optionId: "0f2b13", text: "Thần minh chuyển thế (Tiên thiên sở hữu Thần khảo, đi đến Thần khảo trì tiến hành rút thăm một lần)" },
+                    selection: {
+                      optionId: "0f2b13",
+                      text: "Thần minh chuyển thế (Tiên thiên sở hữu Thần khảo, đi đến Thần khảo trì tiến hành rút thăm một lần)",
+                    },
                   },
                   { type: "setFlag", key: "godTrialReturnStep", value: "humanAge" },
                 ],
@@ -8050,7 +8199,10 @@
                 effects: [
                   {
                     type: "addTalent",
-                    selection: { optionId: "fb20f3", text: "Huyết mạch Chân Long (Đến hồ khởi tạo Hồn Thú rút một chủng loại Long thuần huyết làm Võ Hồn thứ hai của bạn)" },
+                    selection: {
+                      optionId: "fb20f3",
+                      text: "Huyết mạch Chân Long (Đến hồ khởi tạo Hồn Thú rút một chủng loại Long thuần huyết làm Võ Hồn thứ hai của bạn)",
+                    },
                   },
                   { type: "addBloodline", bloodlineId: "Huyết mạch Chân Long" },
                 ],
@@ -8066,7 +8218,10 @@
                 effects: [
                   {
                     type: "addTalent",
-                    selection: { optionId: "844ac1", text: "Huyết mạch Á Long (Đến túi Hồn Thú khởi đầu rút một loài Á Long làm Võ Hồn thứ 2 của bạn)" },
+                    selection: {
+                      optionId: "844ac1",
+                      text: "Huyết mạch Á Long (Đến túi Hồn Thú khởi đầu rút một loài Á Long làm Võ Hồn thứ 2 của bạn)",
+                    },
                   },
                   { type: "addBloodline", bloodlineId: "Huyết mạch Á Long" },
                 ],
@@ -8082,7 +8237,10 @@
                 effects: [
                   {
                     type: "addTalent",
-                    selection: { optionId: "86723a", text: "Huyết mạch Địa Long (Đến túi Hồn Thú khởi đầu rút một loài Địa Long làm Võ Hồn thứ 2 của bạn)" },
+                    selection: {
+                      optionId: "86723a",
+                      text: "Huyết mạch Địa Long (Đến túi Hồn Thú khởi đầu rút một loài Địa Long làm Võ Hồn thứ 2 của bạn)",
+                    },
                   },
                   { type: "addBloodline", bloodlineId: "Địa Long huyết mạch" },
                 ],
@@ -8098,7 +8256,10 @@
                 effects: [
                   {
                     type: "addTalent",
-                    selection: { optionId: "57402f", text: "Tiên Thiên Đạo Thể (Có thể phớt lờ ảnh hưởng tiêu cực do Võ Hồn biến dị mang lại)" },
+                    selection: {
+                      optionId: "57402f",
+                      text: "Tiên Thiên Đạo Thể (Có thể phớt lờ ảnh hưởng tiêu cực do Võ Hồn biến dị mang lại)",
+                    },
                   },
                   { type: "addTrait", traitId: "innate-dao-body" },
                 ],
@@ -9371,7 +9532,10 @@
                     type: "setGodTrialDeity",
                     deityId: "b0336d",
                     deityName: "Nữ Thần Tự Nhiên",
-                    selection: { optionId: "b0336d", text: "Nữ Thần Tự Nhiên (Chỉ dành cho nữ, nếu không sẽ quay lại)" },
+                    selection: {
+                      optionId: "b0336d",
+                      text: "Nữ Thần Tự Nhiên (Chỉ dành cho nữ, nếu không sẽ quay lại)",
+                    },
                   },
                 ],
               },
@@ -9388,7 +9552,10 @@
                     type: "setGodTrialDeity",
                     deityId: "a84362",
                     deityName: "Kiếm Thần",
-                    selection: { optionId: "a84362", text: "Kiếm Thần (Giới hạn Võ Hồn loại Kiếm, nếu không thì rút lại)" },
+                    selection: {
+                      optionId: "a84362",
+                      text: "Kiếm Thần (Giới hạn Võ Hồn loại Kiếm, nếu không thì rút lại)",
+                    },
                   },
                 ],
               },
@@ -9628,7 +9795,10 @@
                     type: "setGodTrialDeity",
                     deityId: "6b2194",
                     deityName: "Long Thần",
-                    selection: { optionId: "6b2194", text: "Long Thần Thần Vị (Yêu cầu Võ Hồn Long Tộc hoặc sở hữu Long Thần Lĩnh vực, nếu không phải rút lại)" },
+                    selection: {
+                      optionId: "6b2194",
+                      text: "Long Thần Thần Vị (Yêu cầu Võ Hồn Long Tộc hoặc sở hữu Long Thần Lĩnh vực, nếu không phải rút lại)",
+                    },
                   },
                 ],
               },
@@ -9735,7 +9905,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setStoryTime", value: { selection: { optionId: "20cd59", text: "Đường Tam 19 tuổi" }, tangAge: 19 } },
+                  {
+                    type: "setStoryTime",
+                    value: { selection: { optionId: "20cd59", text: "Đường Tam 19 tuổi" }, tangAge: 19 },
+                  },
                 ],
               },
               {
@@ -9764,7 +9937,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setStoryTime", value: { selection: { optionId: "c644ae", text: "Đường Tam 12 tuổi" }, tangAge: 12 } },
+                  {
+                    type: "setStoryTime",
+                    value: { selection: { optionId: "c644ae", text: "Đường Tam 12 tuổi" }, tangAge: 12 },
+                  },
                 ],
               },
               {
@@ -9775,7 +9951,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setStoryTime", value: { selection: { optionId: "6489bc", text: "Đường Tam 8 tuổi" }, tangAge: 8 } },
+                  {
+                    type: "setStoryTime",
+                    value: { selection: { optionId: "6489bc", text: "Đường Tam 8 tuổi" }, tangAge: 8 },
+                  },
                 ],
               },
               {
@@ -9786,7 +9965,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setStoryTime", value: { selection: { optionId: "38e0a7", text: "Đường Tam 14 tuổi" }, tangAge: 14 } },
+                  {
+                    type: "setStoryTime",
+                    value: { selection: { optionId: "38e0a7", text: "Đường Tam 14 tuổi" }, tangAge: 14 },
+                  },
                 ],
               },
               {
@@ -9797,7 +9979,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setStoryTime", value: { selection: { optionId: "46d9ba", text: "Đường Tam 4 tuổi" }, tangAge: 4 } },
+                  {
+                    type: "setStoryTime",
+                    value: { selection: { optionId: "46d9ba", text: "Đường Tam 4 tuổi" }, tangAge: 4 },
+                  },
                 ],
               },
               {
@@ -9808,7 +9993,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setStoryTime", value: { selection: { optionId: "19c4fa", text: "Đường Tam 6 tuổi" }, tangAge: 6 } },
+                  {
+                    type: "setStoryTime",
+                    value: { selection: { optionId: "19c4fa", text: "Đường Tam 6 tuổi" }, tangAge: 6 },
+                  },
                 ],
               },
               {
@@ -9819,7 +10007,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setStoryTime", value: { selection: { optionId: "9b768d", text: "Đường Tam 2 tuổi" }, tangAge: 2 } },
+                  {
+                    type: "setStoryTime",
+                    value: { selection: { optionId: "9b768d", text: "Đường Tam 2 tuổi" }, tangAge: 2 },
+                  },
                 ],
               },
               {
@@ -9830,7 +10021,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setStoryTime", value: { selection: { optionId: "0f3066", text: "Đường Tam 10 tuổi" }, tangAge: 10 } },
+                  {
+                    type: "setStoryTime",
+                    value: { selection: { optionId: "0f3066", text: "Đường Tam 10 tuổi" }, tangAge: 10 },
+                  },
                 ],
               },
               {
@@ -9843,7 +10037,11 @@
                 effects: [
                   {
                     type: "setStoryTime",
-                    value: { selection: { optionId: "76f738", text: "Đường Tam vừa mới ra đời" }, tangAge: 0, marker: "birth" },
+                    value: {
+                      selection: { optionId: "76f738", text: "Đường Tam vừa mới ra đời" },
+                      tangAge: 0,
+                      marker: "birth",
+                    },
                   },
                 ],
               },
@@ -13508,7 +13706,11 @@
                 initialPower: 10,
                 noSoulPower: false,
                 effects: [
-                  { type: "setInnatePower", value: 10, selection: { optionId: "8135b3", text: "Tiên thiên mãn Hồn Lực" } },
+                  {
+                    type: "setInnatePower",
+                    value: 10,
+                    selection: { optionId: "8135b3", text: "Tiên thiên mãn Hồn Lực" },
+                  },
                   { type: "setFlag", key: "noSoulPower", value: false },
                 ],
               },
@@ -13536,7 +13738,11 @@
                 initialPower: 20,
                 noSoulPower: false,
                 effects: [
-                  { type: "setInnatePower", value: 20, selection: { optionId: "f28803", text: "Tiên thiên 20 Cấp Hồn Lực" } },
+                  {
+                    type: "setInnatePower",
+                    value: 20,
+                    selection: { optionId: "f28803", text: "Tiên thiên 20 Cấp Hồn Lực" },
+                  },
                   { type: "setFlag", key: "noSoulPower", value: false },
                 ],
               },
@@ -13662,7 +13868,11 @@
                 initialPower: 0,
                 noSoulPower: true,
                 effects: [
-                  { type: "setInnatePower", value: 0, selection: { optionId: "a3f78b", text: "Tiên thiên vô Hồn Lực" } },
+                  {
+                    type: "setInnatePower",
+                    value: 0,
+                    selection: { optionId: "a3f78b", text: "Tiên thiên vô Hồn Lực" },
+                  },
                   { type: "setFlag", key: "noSoulPower", value: true },
                 ],
               },
@@ -13697,7 +13907,11 @@
                 initialPower: 20,
                 noSoulPower: false,
                 effects: [
-                  { type: "setInnatePower", value: 20, selection: { optionId: "9034c8", text: "Tiên thiên 20 Cấp Hồn Lực" } },
+                  {
+                    type: "setInnatePower",
+                    value: 20,
+                    selection: { optionId: "9034c8", text: "Tiên thiên 20 Cấp Hồn Lực" },
+                  },
                   { type: "setFlag", key: "noSoulPower", value: false },
                 ],
               },
@@ -13725,7 +13939,11 @@
                 initialPower: 10,
                 noSoulPower: false,
                 effects: [
-                  { type: "setInnatePower", value: 10, selection: { optionId: "58b9b1", text: "Tiên Thiên Mãn Hồn Lực" } },
+                  {
+                    type: "setInnatePower",
+                    value: 10,
+                    selection: { optionId: "58b9b1", text: "Tiên Thiên Mãn Hồn Lực" },
+                  },
                   { type: "setFlag", key: "noSoulPower", value: false },
                 ],
               },
@@ -13770,7 +13988,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setFaction", selection: { optionId: "1a2ef0", text: "Đệ tử tông môn (12 Trước tuổi không rời tông môn)" } },
+                  {
+                    type: "setFaction",
+                    selection: { optionId: "1a2ef0", text: "Đệ tử tông môn (12 Trước tuổi không rời tông môn)" },
+                  },
                   { type: "setStoryBranch", branch: 3 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
                 ],
@@ -13783,7 +14004,13 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setFaction", selection: { optionId: "c9a0d8", text: "Học viện Hồn Sư sơ cấp không tên tuổi tại Thiên Đấu Đế Quốc" } },
+                  {
+                    type: "setFaction",
+                    selection: {
+                      optionId: "c9a0d8",
+                      text: "Học viện Hồn Sư sơ cấp không tên tuổi tại Thiên Đấu Đế Quốc",
+                    },
+                  },
                   { type: "setStoryBranch", branch: 3 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
                 ],
@@ -13809,7 +14036,13 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setFaction", selection: { optionId: "312c57", text: "Học viện Hồn Sư sơ cấp không tên tuổi tại Tinh La Đế Quốc" } },
+                  {
+                    type: "setFaction",
+                    selection: {
+                      optionId: "312c57",
+                      text: "Học viện Hồn Sư sơ cấp không tên tuổi tại Tinh La Đế Quốc",
+                    },
+                  },
                   { type: "setStoryBranch", branch: 3 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
                 ],
@@ -13848,7 +14081,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setFaction", selection: { optionId: "8488dd", text: "Học viện Hồn Sư sơ cấp thành Tác Thác" } },
+                  {
+                    type: "setFaction",
+                    selection: { optionId: "8488dd", text: "Học viện Hồn Sư sơ cấp thành Tác Thác" },
+                  },
                   { type: "setStoryBranch", branch: 3 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
                 ],
@@ -13863,7 +14099,10 @@
                 effects: [
                   {
                     type: "setFaction",
-                    selection: { optionId: "3983ad", text: "Học viên được bồi dưỡng trọng điểm của Võ Hồn Điện (Yêu cầu Hồn Lực bẩm sinh từ Cấp 7 trở lên)" },
+                    selection: {
+                      optionId: "3983ad",
+                      text: "Học viên được bồi dưỡng trọng điểm của Võ Hồn Điện (Yêu cầu Hồn Lực bẩm sinh từ Cấp 7 trở lên)",
+                    },
                   },
                   { type: "setStoryBranch", branch: 2 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
@@ -13960,7 +14199,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setFaction", selection: { optionId: "81d596", text: "Gia nhập học viện sơ cấp đảm nhận chức vụ giáo viên" } },
+                  {
+                    type: "setFaction",
+                    selection: { optionId: "81d596", text: "Gia nhập học viện sơ cấp đảm nhận chức vụ giáo viên" },
+                  },
                   { type: "setStoryBranch", branch: 3 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
                   { type: "setFlag", key: "factionStage12Chosen", value: true },
@@ -14004,7 +14246,10 @@
                 effects: [
                   {
                     type: "setFaction",
-                    selection: { optionId: "84af8b", text: "Học viện Sử Lai Khắc (20+Giới hạn Cấp, nếu không sẽ rút lại) (Tiến vào nhánh cốt truyện 1)" },
+                    selection: {
+                      optionId: "84af8b",
+                      text: "Học viện Sử Lai Khắc (20+Giới hạn Cấp, nếu không sẽ rút lại) (Tiến vào nhánh cốt truyện 1)",
+                    },
                   },
                   { type: "setStoryBranch", branch: 1 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
@@ -14026,7 +14271,13 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setFaction", selection: { optionId: "743691", text: "Gia nhập đoàn lính đánh thuê trung cấp, đảm nhiệm chức Phó đoàn trưởng" } },
+                  {
+                    type: "setFaction",
+                    selection: {
+                      optionId: "743691",
+                      text: "Gia nhập đoàn lính đánh thuê trung cấp, đảm nhiệm chức Phó đoàn trưởng",
+                    },
+                  },
                   { type: "setStoryBranch", branch: 3 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
                   { type: "setFlag", key: "factionStage12Chosen", value: true },
@@ -14041,7 +14292,13 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setFaction", selection: { optionId: "77e37b", text: "Nhậm chức Giáo Chủ tại Võ Hồn Điện (Tiến vào nhánh cốt truyện 2)" } },
+                  {
+                    type: "setFaction",
+                    selection: {
+                      optionId: "77e37b",
+                      text: "Nhậm chức Giáo Chủ tại Võ Hồn Điện (Tiến vào nhánh cốt truyện 2)",
+                    },
+                  },
                   { type: "setStoryBranch", branch: 2 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
                   { type: "setFlag", key: "factionStage12Chosen", value: true },
@@ -14071,7 +14328,13 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setFaction", selection: { optionId: "38e50b", text: "Đảm nhận chức vụ giáo viên tại Học viện Hoàng gia Thiên Đấu" } },
+                  {
+                    type: "setFaction",
+                    selection: {
+                      optionId: "38e50b",
+                      text: "Đảm nhận chức vụ giáo viên tại Học viện Hoàng gia Thiên Đấu",
+                    },
+                  },
                   { type: "setStoryBranch", branch: 3 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
                   { type: "setFlag", key: "factionStage12Chosen", value: true },
@@ -14086,7 +14349,13 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setFaction", selection: { optionId: "80fcef", text: "Thất Bảo Lưu Ly Tông chiêu mộ, chọn trở thành Cung phụng của tông môn" } },
+                  {
+                    type: "setFaction",
+                    selection: {
+                      optionId: "80fcef",
+                      text: "Thất Bảo Lưu Ly Tông chiêu mộ, chọn trở thành Cung phụng của tông môn",
+                    },
+                  },
                   { type: "setStoryBranch", branch: 3 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
                   { type: "setFlag", key: "factionStage12Chosen", value: true },
@@ -14101,7 +14370,10 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setFaction", selection: { optionId: "89ca9f", text: "Giáo viên giảng dạy tại Học viện Ngũ Nguyên Tố" } },
+                  {
+                    type: "setFaction",
+                    selection: { optionId: "89ca9f", text: "Giáo viên giảng dạy tại Học viện Ngũ Nguyên Tố" },
+                  },
                   { type: "setStoryBranch", branch: 3 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
                   { type: "setFlag", key: "factionStage12Chosen", value: true },
@@ -14133,7 +14405,10 @@
                 effects: [
                   {
                     type: "setFaction",
-                    selection: { optionId: "598f93", text: "Giảng viên tại Học viện Sử Lai Khắc (Tiến vào nhánh cốt truyện 1)" },
+                    selection: {
+                      optionId: "598f93",
+                      text: "Giảng viên tại Học viện Sử Lai Khắc (Tiến vào nhánh cốt truyện 1)",
+                    },
                   },
                   { type: "setStoryBranch", branch: 1 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
@@ -14149,7 +14424,13 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "setFaction", selection: { optionId: "99b47d", text: "Đảm nhiệm chức giáo viên tại Học viện Hoàng gia Tinh La Đế Quốc" } },
+                  {
+                    type: "setFaction",
+                    selection: {
+                      optionId: "99b47d",
+                      text: "Đảm nhiệm chức giáo viên tại Học viện Hoàng gia Tinh La Đế Quốc",
+                    },
+                  },
                   { type: "setStoryBranch", branch: 3 },
                   { type: "setFlag", key: "factionStage6Chosen", value: true },
                   { type: "setFlag", key: "factionStage12Chosen", value: true },
@@ -26666,7 +26947,12 @@
                 weight: 8,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn bị quân đoàn Hồn Thánh vây công, trọng thương tử trận (90+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause: "Bạn bị quân đoàn Hồn Thánh vây công, trọng thương tử trận (90+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 90 }],
               },
             ],
@@ -26722,7 +27008,12 @@
                 weight: 8,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn đã sơ ý, bị Hô Diên Chấn tấn công dồn dập đến tử trận (90+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause: "Bạn đã sơ ý, bị Hô Diên Chấn tấn công dồn dập đến tử trận (90+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 90 }],
               },
               {
@@ -26796,7 +27087,13 @@
                 weight: 8,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn đã sơ suất, bị hai vị Phong Hào Đấu La vây công đến mức tử trận (95+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause:
+                      "Bạn đã sơ suất, bị hai vị Phong Hào Đấu La vây công đến mức tử trận (95+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 95 }],
               },
               {
@@ -26998,7 +27295,12 @@
                 weight: 35,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn bị hạ gục trong chớp mắt, chỉ như một cái gờ giảm tốc lướt qua (90+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause: "Bạn bị hạ gục trong chớp mắt, chỉ như một cái gờ giảm tốc lướt qua (90+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 90 }],
               },
               {
@@ -27009,7 +27311,11 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "death", cause: "Thất bại tử trận, linh hồn của bạn bị Võ Hồn Điện rút đi, ngay cả cơ hội hồi sinh cũng không để lại cho bạn (95+Cấp có thể rút lại)" },
+                  {
+                    type: "death",
+                    cause:
+                      "Thất bại tử trận, linh hồn của bạn bị Võ Hồn Điện rút đi, ngay cả cơ hội hồi sinh cũng không để lại cho bạn (95+Cấp có thể rút lại)",
+                  },
                 ],
                 rerollWhen: [{ type: "levelAtLeast", value: 95 }],
               },
@@ -27200,7 +27506,13 @@
                 weight: 15,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn bị La Sát và Thiên Sứ vây công, cuối cùng tử trận (Sở hữu Thần Vị Thần Vương hoặc Thần Vị kép có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause:
+                      "Bạn bị La Sát và Thiên Sứ vây công, cuối cùng tử trận (Sở hữu Thần Vị Thần Vương hoặc Thần Vị kép có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [
                   {
                     type: "anyOf",
@@ -27694,7 +28006,13 @@
                 weight: 8,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn bị quân đoàn Thiên Đấu với hàng trăm Hồn Thánh vây công, trọng thương tử trận (90+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause:
+                      "Bạn bị quân đoàn Thiên Đấu với hàng trăm Hồn Thánh vây công, trọng thương tử trận (90+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 90 }],
               },
             ],
@@ -27751,7 +28069,13 @@
                 weight: 8,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn đã sơ ý, bị 6 người Sử Lai Khắc Lục Quái vây công đến mức tử trận (95+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause:
+                      "Bạn đã sơ ý, bị 6 người Sử Lai Khắc Lục Quái vây công đến mức tử trận (95+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 95 }],
               },
               {
@@ -27835,7 +28159,12 @@
                 weight: 8,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn đã sơ suất, bị hai Phong Hào Đấu La vây công đến chết (95+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause: "Bạn đã sơ suất, bị hai Phong Hào Đấu La vây công đến chết (95+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 95 }],
               },
               {
@@ -28010,7 +28339,12 @@
                 weight: 35,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn bị giết trong chớp mắt, bị coi như gờ giảm tốc mà vượt qua (90+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause: "Bạn bị giết trong chớp mắt, bị coi như gờ giảm tốc mà vượt qua (90+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 90 }],
               },
               {
@@ -28020,7 +28354,13 @@
                 weight: 25,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Thất bại tử trận, đối thủ của bạn đã Tạc Hoàn kết liễu trong chớp mắt (95+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause:
+                      "Thất bại tử trận, đối thủ của bạn đã Tạc Hoàn kết liễu trong chớp mắt (95+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 95 }],
               },
               {
@@ -28204,7 +28544,8 @@
                 effects: [
                   {
                     type: "death",
-                    cause: "Bạn phản bội Võ Hồn Điện, đồng thời đánh Thiên Sứ và La Sát+Đường Tam, cuối cùng tử trận (Sở hữu Thần Vị Thần Vương hoặc Thần Vị kép có thể rút lại)",
+                    cause:
+                      "Bạn phản bội Võ Hồn Điện, đồng thời đánh Thiên Sứ và La Sát+Đường Tam, cuối cùng tử trận (Sở hữu Thần Vị Thần Vương hoặc Thần Vị kép có thể rút lại)",
                   },
                 ],
                 rerollWhen: [
@@ -28556,7 +28897,12 @@
                 weight: 8,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn bị quân đoàn Hồn Thánh vây công, trọng thương tử trận (90+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause: "Bạn bị quân đoàn Hồn Thánh vây công, trọng thương tử trận (90+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 90 }],
               },
             ],
@@ -28612,7 +28958,12 @@
                 weight: 8,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn đã sơ ý, bị Hô Diên Chấn tấn công dồn dập đến tử trận (90+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause: "Bạn đã sơ ý, bị Hô Diên Chấn tấn công dồn dập đến tử trận (90+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 90 }],
               },
               {
@@ -28686,7 +29037,12 @@
                 weight: 8,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn đã sơ suất, bị hai Phong Hào Đấu La vây công đến chết (95+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause: "Bạn đã sơ suất, bị hai Phong Hào Đấu La vây công đến chết (95+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 95 }],
               },
               {
@@ -28769,7 +29125,9 @@
                 weight: 8,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn bị Bỉ Bỉ Đông chém giết (99 Cấp hoặc Thần Cấp có thể rút lại)" }],
+                effects: [
+                  { type: "death", cause: "Bạn bị Bỉ Bỉ Đông chém giết (99 Cấp hoặc Thần Cấp có thể rút lại)" },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 99 }],
               },
               {
@@ -28888,7 +29246,12 @@
                 weight: 35,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn bị giết trong tích tắc, chỉ như một cái gờ giảm tốc lướt qua (90+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause: "Bạn bị giết trong tích tắc, chỉ như một cái gờ giảm tốc lướt qua (90+Cấp có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [{ type: "levelAtLeast", value: 90 }],
               },
               {
@@ -28899,7 +29262,11 @@
                 weightDefaulted: false,
                 enabled: true,
                 effects: [
-                  { type: "death", cause: "Thất bại tử trận, linh hồn của bạn bị Võ Hồn Điện rút đi, ngay cả cơ hội hồi sinh cũng không để lại cho bạn (95+Cấp có thể rút lại)" },
+                  {
+                    type: "death",
+                    cause:
+                      "Thất bại tử trận, linh hồn của bạn bị Võ Hồn Điện rút đi, ngay cả cơ hội hồi sinh cũng không để lại cho bạn (95+Cấp có thể rút lại)",
+                  },
                 ],
                 rerollWhen: [{ type: "levelAtLeast", value: 95 }],
               },
@@ -29090,7 +29457,13 @@
                 weight: 15,
                 weightDefaulted: false,
                 enabled: true,
-                effects: [{ type: "death", cause: "Bạn bị La Sát và Thiên Sứ vây công, cuối cùng tử trận (Sở hữu Thần Vị Thần Vương hoặc Thần Vị kép có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause:
+                      "Bạn bị La Sát và Thiên Sứ vây công, cuối cùng tử trận (Sở hữu Thần Vị Thần Vương hoặc Thần Vị kép có thể rút lại)",
+                  },
+                ],
                 rerollWhen: [
                   {
                     type: "anyOf",
@@ -31822,7 +32195,13 @@
                 enabled: true,
                 wheelLabel: "Bạn chi viện Đường Tam, nhưng bị 6 tên Hồn Đấu La vây công đến chết",
                 rerollWhen: [{ type: "levelAtLeast", value: 80 }],
-                effects: [{ type: "death", cause: "Bạn chi viện Đường Tam, nhưng bị 6 tên Hồn Đấu La vây công đến chết (80+Cấp có thể rút lại)" }],
+                effects: [
+                  {
+                    type: "death",
+                    cause:
+                      "Bạn chi viện Đường Tam, nhưng bị 6 tên Hồn Đấu La vây công đến chết (80+Cấp có thể rút lại)",
+                  },
+                ],
               },
             ],
           },
@@ -33417,7 +33796,8 @@
                 wheelLabel: "Tùy chọn 9",
                 requirements: [{ type: "hasTitle", value: "Tiết Tấu" }],
                 customHandler: "grantNamedSelfCreatedGodhood",
-                unresolvedReason: "Nguyên văn ban cho ”Thần Vị Tiết Chế”, nhưng danh hiệu tiền tố viết là ”Tiết Tấu”; hiện tại nghiêm ngặt giữ nguyên tiền tố gốc, không tự động thay đổi thành“Tiết Chế”.",
+                unresolvedReason:
+                  "Nguyên văn ban cho ”Thần Vị Tiết Chế”, nhưng danh hiệu tiền tố viết là ”Tiết Tấu”; hiện tại nghiêm ngặt giữ nguyên tiền tố gốc, không tự động thay đổi thành“Tiết Chế”.",
                 unresolvedSeverity: "high",
               },
               {
@@ -39443,7 +39823,12 @@
           },
         ],
         flows: {
-          origin: { id: "origin", title: "Vận mệnh khởi đầu", subtitle: "Hình thái Sinh Mệnh của bạn do vận mệnh quyết định", poolId: "origin-pool" },
+          origin: {
+            id: "origin",
+            title: "Vận mệnh khởi đầu",
+            subtitle: "Hình thái Sinh Mệnh của bạn do vận mệnh quyết định",
+            poolId: "origin-pool",
+          },
           "human-origin": {
             id: "human-origin",
             title: "Nơi đến của nhân gian",
@@ -39806,7 +40191,9 @@
       runState = Core.importSave(resolved.content, resolved.value);
     } else runState = null;
     if (persist && runState)
-      schedulePersist(runState, activeChatId).catch((error) => notify("error", `Lưu trữ thất bại：${error.message || error}`));
+      schedulePersist(runState, activeChatId).catch((error) =>
+        notify("error", `Lưu trữ thất bại：${error.message || error}`),
+      );
     emit(reason);
     return runState ? Core.clone(runState) : null;
   }
@@ -40184,7 +40571,10 @@
 
   function selectContentPack(packId) {
     if (!CONTENT_BY_ID.has(packId)) throw new Error(`Gói nội dung không tồn tại：${packId}`);
-    if (runState && runState.contentId !== packId) throw new Error("Vận mệnh đang diễn ra không thể trực tiếp chuyển đổi gói nội dung; vui lòng bắt đầu vận mệnh mới");
+    if (runState && runState.contentId !== packId)
+      throw new Error(
+        "Vận mệnh đang diễn ra không thể trực tiếp chuyển đổi gói nội dung; vui lòng bắt đầu vận mệnh mới",
+      );
     selectedPackId = packId;
     emit("content-pack");
     return Core.clone(activeContent());
@@ -40243,7 +40633,12 @@
       }
       if (input) break;
     }
-    if (!input) return { ok: false, code: "input-missing", message: "Không tìm thấy khung nhập liệu trò chuyện Tavern; vẫn có thể sử dụng sao chép tóm tắt" };
+    if (!input)
+      return {
+        ok: false,
+        code: "input-missing",
+        message: "Không tìm thấy khung nhập liệu trò chuyện Tavern; vẫn có thể sử dụng sao chép tóm tắt",
+      };
     const source = String(value == null ? "" : value);
     if (input.matches("[contenteditable='true']")) input.textContent = source;
     else input.value = source;
@@ -40265,7 +40660,9 @@
     if (lifecycleBound) return;
     lifecycleBound = true;
     const handler = () =>
-      loadForCurrentChat().catch((error) => notify("error", `Đọc tệp lưu trữ thất bại sau khi chuyển đổi trò chuyện：${error.message || error}`));
+      loadForCurrentChat().catch((error) =>
+        notify("error", `Đọc tệp lưu trữ thất bại sau khi chuyển đổi trò chuyện：${error.message || error}`),
+      );
     const eventOn = getCallable("eventOn");
     const eventRemoveListener = getCallable("eventRemoveListener");
     const tavernEvents = getGlobal("tavern_events");
