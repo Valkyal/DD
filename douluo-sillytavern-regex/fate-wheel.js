@@ -284,7 +284,7 @@
     for (const [attribute, stageValue] of Object.entries(beast.attributeStages)) {
       const stage = Math.max(0, Math.min(4, number(stageValue)));
       if (stage === 1) staged.push(attribute);
-      if (stage === 2) staged.push(`Cực Chí${attribute}`);
+      if (stage === 2) staged.push(`Cực Trí${attribute}`);
       if (stage === 3) {
         staged.push(`${attribute} Pháp tắc sơ khai`);
         prototypes.push(`${attribute} Pháp tắc sơ khai`);
@@ -295,7 +295,7 @@
       }
     }
     character.attributes = Array.from(
-      new Set([...(character.attributes || []).filter((item) => !/^((?:极致|Cực Chí))?.+((?:法则雏形|Pháp tắc sơ khai)|(?:法则|pháp tắc))?$/.test(item)), ...staged]),
+      new Set([...(character.attributes || []).filter((item) => !/^((?:Cực Trí|Cực Trí))?.+((?:Pháp tắc sơ khai|Pháp tắc sơ khai)|(?:Pháp tắc|pháp tắc))?$/.test(item)), ...staged]),
     );
     character.traits = Array.from(
       new Set([...(character.traits || []).filter((item) => !item.endsWith("Pháp tắc sơ khai")), ...prototypes]),
